@@ -1,0 +1,65 @@
+﻿@model PayrollApp.Models.Employee
+
+@{
+    ViewData["Title"] = "Crear";
+}
+
+<style>
+    .control-label {
+        font-weight: 600;
+    }
+</style>
+
+<h1>Crear</h1>
+
+<h4>Empleado</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label class="control-label">Nombre</label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Apellido</label>
+                <input asp-for="LastName" class="form-control" required />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Genero</label>
+                <select name="Gender" class="form-control" required>
+                    <option value="" selected>Seleccione el genero correspondiente</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Salario</label>
+                <input asp-for="Salary" class="form-control" />
+                <span asp-validation-for="Salary" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-12">
+                        <label class="control-label">Activar empleado</label>
+                        <input asp-for="Status" class="form-control" />
+                    </div>                   
+                </div>                
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group float-right">
+                <input type="submit" value="Crear" class="btn btn-primary" />
+                <a class="btn btn-dark" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

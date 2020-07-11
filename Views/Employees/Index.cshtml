@@ -1,0 +1,77 @@
+﻿@model IEnumerable<PayrollApp.Models.Employee>
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+    <br />
+    <div class="row">
+        <div class="col-6">
+            <h2>Empleados</h2>
+        </div>
+        <div class="col-6">
+            <p class="float-right">
+                <a class="btn btn-dark" asp-action="Create">Nuevo empleado</a>
+            </p>
+        </div>
+    </div>
+    <hr />
+    <table class="table" id="employeeTable">
+        <thead class="thead-dark">
+            <tr>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Apellido
+                </th>
+                <th>
+                    Genero
+                </th>
+                <th>
+                    Salario
+                </th>
+                <th>
+                    Estado
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+    @foreach (var item in Model) {
+        var salary = item.Salary;
+        var status = item.Status ? "Activo" : "Inactivo";
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Gender)
+                </td>
+                <td>
+                    @salary
+                </td>
+                <th>
+                    @status
+                </th>
+                <td>
+                    <center>
+                        <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                        <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                    </center>
+                </td>
+            </tr>
+    }     
+        </tbody>
+    </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#employeeTable').dataTable();
+        });
+    </script>
+}

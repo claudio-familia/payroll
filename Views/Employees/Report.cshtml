@@ -1,0 +1,203 @@
+﻿@model PayrollApp.Models.Dto.EmployeeResponseDto
+@{
+    ViewData["Title"] = "Reportes";
+}    
+    <div class="row">
+        <div class="col-12">
+            <h2>Reporte de empleados</h2>
+            <hr />
+            <div class="card">
+                <div class="card-header">
+                    Filtros
+                </div>
+                <div class="card-body">
+                    <form asp-action="Report">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="card-title">Filtro (Nombre, apellido, salario)</h5>
+                                <input type="text" name="Filter" class="form-control" id="Filter" placeholder="Digite una palabra para filtrar" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-4">                                
+                                <h5 class="card-title">Sexo</h5>
+                                <select name="Gender" id="Gender" class="form-control">
+                                    <option value="">Todos los generos</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="card-title">Estado</h5>
+                                <select name="Status" id="Status" class="form-control">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="card-title">Ordenar por: </h5>
+                                <select name="OrderBy" id="OrderBy" class="form-control">
+                                    <option value="">Seleccionar un orden particular</option>
+                                    <option value="NameUp">Ordernar por nombre ascendente</option>
+                                    <option value="NameDown">Ordernar por nombre descendente</option>
+
+                                    <option value="LastNameUp">Ordernar por apellido ascendente</option>
+                                    <option value="LastNameDown">Ordernar por apellido descendente</option>
+
+                                    <option value="SalaryUp">Ordenar por salario ascendente</option>
+                                    <option value="SalaryDown">Ordenar por salario descendente</option>
+                                </select>
+                            </div>
+                    </div>
+                    <br />
+                    <p class="float-right">
+                        <button type="button" href="#" id="btnPrint" class="btn btn-success">Imprimir</button>
+                        <button type="submit" href="#" class="btn btn-primary">Generar reporte</button>
+                    </p>
+                    </form>
+                </div>
+            </div>
+            <br />
+            <div class="card">
+                <div class="card-header">
+                    Resultados
+                </div>
+                <div class="card-body">                    
+                    @if (Model.Results == null || Model.Results.Count() == 0)
+                    {
+                        <div id="noResult" style="padding:20px;">
+                            <center>
+                                No hay resultados para mostrar
+                            </center>
+                        </div>
+                    }
+                    else
+                    {
+                        <div id="print-zone">
+                            <dl class="row">
+                                <dt class="col-sm-2">
+                                    Total de empleados:
+                                </dt>
+                                <dd class="col-sm-2">
+                                    @Model.Results.Count()
+                                </dd>
+
+                                <dt class="col-sm-2">
+                                    Total masculino
+                                </dt>
+                                <dd class="col-sm-2">
+                                    @Model.Results.Count(emp => emp.Gender == "Masculino")
+                                </dd>
+
+                                <dt class="col-sm-2">
+                                    Total femenino
+                                </dt>
+                                <dd class="col-sm-2">
+                                    @Model.Results.Count(emp => emp.Gender == "Femenino")
+                                </dd>
+
+                                <dt class="col-sm-2">
+                                    Suma de salarios:
+                                </dt>
+                                <dd class="col-sm-2">
+                                    @{ 
+                                        var total = String.Format("{0,12:C2}", Model.Results.Sum(emp => emp.Salary));
+                                    }
+                                    @total
+                                </dd>
+                            </dl>
+                            <br />
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Nombre
+                                        </th>
+                                        <th>
+                                            Apellido
+                                        </th>
+                                        <th>
+                                            Genero
+                                        </th>
+                                        <th>
+                                            Salario
+                                        </th>
+                                        <th>
+                                            Estado
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Results)
+                                    {
+                                        var salary = String.Format("{0,12:C2}", item.Salary);
+                                        var status = item.Status ? "Activo" : "Inactivo";
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.Name)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.LastName)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.Gender)
+                                            </td>
+                                            <td>
+                                                @salary
+                                            </td>
+                                            <th>
+                                                @status
+                                            </th>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section Scripts{ 
+    <script>
+        $(document).ready(function () {
+            const filter = '@Model.Filters.Filter';
+            const gender = '@Model.Filters.Gender';
+            const status = '@Model.Filters.Status';
+            const orderBy = '@Model.Filters.OrderBy';
+
+            $('#Filter').val(`${filter}`);
+            $('#Gender').val(`${gender}`);
+            $('#Status').val(`${status}`);
+            $('#OrderBy').val(`${orderBy}`);
+
+            $('#btnPrint').click(function () {
+                let htmlToPrint = '';
+
+                htmlToPrint = $('#print-zone').html()
+                                                
+                var mywindow = window.open('', '', '');
+                mywindow.document.write('<html><head><title>Payroll | Reporte de empleados</title>');
+                mywindow.document.write('<link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />');                
+                mywindow.document.write('<link rel="stylesheet" href="/css/site.css" />');               
+
+                mywindow.document.write('</head><body >');
+                mywindow.document.write(htmlToPrint);
+                mywindow.document.write('</body></html>');                
+                mywindow.document.close();
+
+                setTimeout(function () {
+                    mywindow.print();
+                }, 500);                
+
+
+                return false;
+            });
+        });
+    </script>
+}
