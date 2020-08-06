@@ -1,0 +1,388 @@
+﻿@{
+    ViewData["Title"] = "Generar nomina";    
+}
+
+@section Styles {
+    <link rel="stylesheet" type="text/css" href="~/css/payrollGen.css">
+}
+
+<div class="alert alert-warning alert-dismissible fade show" style="position:absolute; top: 10px; right:100px; z-index: 9999;" role="alert">
+    <center>
+        <strong>Todos los empleados marcados formaran parte de la nomina generada.</strong> <br />Por defecto, solo se encuentran marcados los empleados activos.
+    </center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="containerGen">
+    <form method="POST" id="payroll-generator" class="signup-form" enctype="multipart/form-data">
+        <h3>
+            <br />
+            Selección de empleados
+        </h3>
+        <fieldset style="padding-top: 20px !important">
+            <table id="employeeTable" class="table table-hover" style="width:100%">
+                <thead class="thead-dark">
+                    <tr>
+                        <th></th>
+                        <th>Id</th>
+                        <th>Empleado</th>
+                        <th>Salario</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <br />
+            <button type="button" class="btn btn-info" id="prevRegs">Atras</button>
+            <button type="button" class="btn btn-info" id="nextRegs">Adelante</button>
+        </fieldset>
+
+        <h3>
+            <br />
+            Datos de la nomina
+        </h3>
+        <fieldset style="padding-top: 30px !important">
+            <div class="form-group">
+                <label for="payroll-date">Fecha de la nomina</label>
+                <input type="date" class="form-control" id="payroll-date">
+                <div class="invalid-feedback" id="invalid-date" style="display:none">
+                    Debe de elegir una fecha para la nomina.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="afp-retention">Retención AFP</label>
+                <div class="input-group mb-2">
+                    <input type="number" class="form-control" id="afp-retention" value="2.87">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text"><b>%</b></div>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="invalid-afp" style="display:none">
+                    Debe de digitar el porciento de la retención de la AFP.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ars-retention">Retención ARS</label>
+                <div class="input-group mb-2">
+                    <input type="number" class="form-control" id="ars-retention" value="3.04">
+                    <div class="input-group-append">
+                        <div class="input-group-text"><b>%</b></div>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="invalid-ars" style="display:none">
+                    Debe de digitar el porciento de la retención de la ARS.
+                </div>
+            </div>
+        </fieldset>
+
+        <h3>
+            <br />
+            Procesar nomina
+        </h3>
+        <fieldset style="padding-top: 30px !important">
+            <h4>Detalles de la nomina a generar</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-4">
+                    Cantidad de empleados
+                </dt>
+                <dd class="col-sm-8" id="detail-employee-quantity">
+                    0
+                </dd>
+                <dt class="col-sm-4">
+                    Fecha de la nomina
+                </dt>
+                <dd class="col-sm-8" id="detail-payroll-date">
+                    dd/mm/yyyy
+                </dd>
+                <dt class="col-sm-4">
+                    Retención AFP
+                </dt>
+                <dd class="col-sm-8" id="detail-afp">
+                    0
+                </dd>
+                <dt class="col-sm-4">
+                    Retención ARS
+                </dt>
+                <dd class="col-sm-8" id="detail-ars">
+                    0
+                </dd>
+                <dt class="col-sm-4">
+                    Total descuentos ISR
+                </dt>
+                <dd class="col-sm-8" id="detail-discount">
+                    0
+                </dd>
+                <dt class="col-sm-4">
+                    Total nomina
+                </dt>
+                <dd class="col-sm-8" id="detail-total">
+                    0
+                </dd>
+            </dl>
+        </fieldset>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/jquery.steps.js"></script>    
+    <script>
+        $(document).ready(function () {
+            setTimeout(() => { $('.alert').alert('close'); }, 10000);
+            var employees = [];
+            var currentIndex = 0;
+            const payrollService = {
+                getEmployees: () => {
+                    $.getJSON('@Url.Action("GetEmployees")').then(data => {
+                        let fullcounter = 0;
+                        let counter = 0;
+                        let page = [];
+                        for (let item of data) {
+                            counter++;
+                            fullcounter++;
+                            const itemToBeInserted = { ...item, isChecked: item.status };
+                            page.push(itemToBeInserted);
+                            if (counter == 3 || fullcounter == data.length) {
+                                counter = 0;
+                                employees.push(page);
+                                page = [];
+                            }
+                        }
+                        $('#prevRegs').attr('disabled', 'disabled');
+                        setTableData(employees, currentIndex);
+                        $('#nextRegs').click(function () {
+                            $('#prevRegs').removeAttr('disabled');
+
+                            currentIndex++;
+                            setTableData(employees, currentIndex);
+
+                            if (currentIndex == (employees.length - 1)) {
+                                $(this).attr('disabled', 'disabled');
+                                return;
+                            }
+                        });
+                        $('#prevRegs').click(function () {
+                            $('#nextRegs').removeAttr('disabled');
+
+                            currentIndex--;
+                            setTableData(employees, currentIndex);
+
+                            if (currentIndex == 0) {
+                                $(this).attr('disabled', 'disabled');
+                                return;
+                            }
+                        });
+                    });
+                }
+            }
+
+            payrollService.getEmployees();
+
+            (function ($) {
+
+                var form = $("#payroll-generator");
+                form.steps({
+                    headerTag: "h3",
+                    bodyTag: "fieldset",
+                    transitionEffect: "fade",
+                    labels: {
+                        previous: 'Atras',
+                        next: 'Siguiente',
+                        finish: 'Generar',
+                        current: ''
+                    },
+                    titleTemplate: '<h3 class="title">#title#</h3>',
+                    onStepChanging: function (event, currentIndex, newIndex) {
+                        if (currentIndex === 1) {
+                            if ($('#payroll-date').val() == "" || $('#afp-retention').val() == "" || $('#ars-retention').val() == "") {
+                                validateData();
+                                return false;
+                            }
+                        }
+                        if (newIndex === 2) {
+                            setDetailPayrollTab();
+                        }
+                        return true;
+                    },
+                    onFinished: function (event, currentIndex) {
+                        const selectedEmployees = []
+
+                        employees.filter(item => {
+                            for (let element of item) {
+                                if (element.isChecked) {
+                                    const employeeToAdd = { ...element }
+                                    delete employeeToAdd.isChecked
+                                    selectedEmployees.push(employeeToAdd);
+                                }
+                            }
+                        });
+
+                        const data = {
+                            employees: selectedEmployees,
+                            date: $('#payroll-date').val(),
+                            afp: $('#afp-retention').val(),
+                            ars: $('#ars-retention').val(), 
+                        }
+
+                        $.getJSON(`/validategenerate/${data.date}`).then(resp => {
+                            if (resp.message == "Ok") {
+                                $.ajax({
+                                    url: '@Url.Action("Generate")',
+                                    type: 'POST',
+                                    data: data,
+                                    success: res => Swal.fire("Operación exitosa", "Nomina generada correctamente", "success").then(() => { window.location.href = "/Payrolls" }),
+                                    error: err => console.log(err, 'error')
+                                });
+                            } else {
+                                Swal.fire("Error al generar", resp.message, "error")
+                            }
+                        })
+                    }
+                });
+
+                $('#country').parent().append('<ul id="newcountry" class="select-list" name="country"></ul>');
+                $('#country option').each(function () {
+                    $('#newcountry').append('<li value="' + $(this).val() + '">' + $(this).text() + '</li>');
+                });
+                $('#country').remove();
+                $('#newcountry').attr('id', 'country');
+                $('#country li').first().addClass('init');
+                $("#country").on("click", ".init", function () {
+                    $(this).closest("#country").children('li:not(.init)').toggle();
+                });
+
+                var allOptions = $("#country").children('li:not(.init)');
+                $("#country").on("click", "li:not(.init)", function () {
+                    allOptions.removeClass('selected');
+                    $(this).addClass('selected');
+                    $("#country").children('.init').html($(this).html());
+                    allOptions.toggle();
+                });
+
+                $('#daily_budget').parent().append('<ul id="newdaily_budget" class="select-list" name="daily_budget"></ul>');
+                $('#daily_budget option').each(function () {
+                    $('#newdaily_budget').append('<li value="' + $(this).val() + '">' + $(this).text() + '</li>');
+                });
+                $('#daily_budget').remove();
+                $('#newdaily_budget').attr('id', 'daily_budget');
+                $('#daily_budget li').first().addClass('init');
+                $("#daily_budget").on("click", ".init", function () {
+                    $(this).closest("#daily_budget").children('li:not(.init)').toggle();
+                });
+
+                var DailyOptions = $("#daily_budget").children('li:not(.init)');
+                $("#daily_budget").on("click", "li:not(.init)", function () {
+                    DailyOptions.removeClass('selected');
+                    $(this).addClass('selected');
+                    $("#daily_budget").children('.init').html($(this).html());
+                    DailyOptions.toggle();
+                });
+
+
+                function setDetailPayrollTab() {
+                    let employeeCount = 0;
+                    let totalDiscount = 0;
+                    let totalSalary = 0;
+                    const selectedEmployees = []
+
+                    employees.filter(item => {
+                        for (let element of item) {
+                            if (element.isChecked) {
+                                selectedEmployees.push(element);
+                            }
+                        }
+                    });
+
+                    selectedEmployees.forEach(item => {
+                        totalSalary += item.salary;
+
+                        const salaryByYear = item.salary * 12;
+
+                        if (salaryByYear <= 416220) {
+                            totalDiscount += 0;
+                        } else if (salaryByYear > 416220.01 && salaryByYear <= 624329) {
+                            totalDiscount += Number(((salaryByYear - 416220.01) * 0.15).toFixed(2));
+                        } else if (salaryByYear > 624329.01 && salaryByYear <= 867123) {
+                            let discount = 2601.33 + ((salaryByYear - 624329.01) * 0.2);
+                            totalDiscount += Number(discount.toFixed(2));
+                        } else if (salaryByYear > 867123.01) {
+                            let discount = 6648 + ((salaryByYear - 867123.01) * 0.25);
+                            totalDiscount += Number(discount.toFixed(2));
+                        }
+                    });
+
+                    totalDiscount = totalDiscount / 12;
+                    totalDiscount = totalDiscount.toFixed(2)
+
+                    employeeCount = selectedEmployees.length;
+                    $('#detail-employee-quantity').text(`${employeeCount}`)
+
+
+                    let date = $('#payroll-date').val();
+                    date = date.split('-');
+                    $('#detail-payroll-date').text(`${date[2]}-${date[1]}-${date[0]}`);
+
+                    let totalAfp = ($('#afp-retention').val() / 100) * totalSalary
+                    let totalARS = ($('#ars-retention').val() / 100) * totalSalary
+                    $('#detail-afp').text(`RD$ ${totalAfp.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} equivalente a ${$('#afp-retention').val()} %`);
+                    $('#detail-ars').text(`RD$ ${totalARS.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} equivalente a  ${$('#ars-retention').val()} %`);
+
+                    $('#detail-discount').text(`RD$ ${totalDiscount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+                    $('#detail-total').text(`RD$ ${totalSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+                }
+                function validateData() {
+                    if ($('#payroll-date').val() == "") {
+                        $('#payroll-date').addClass('is-invalid')
+                        $('#invalid-date').show();
+                    }
+                    if ($('#afp-retention').val() == "") {
+                        $('#afp-retention').addClass('is-invalid');
+                        $('#invalid-afp').show();
+                    }
+                    if ($('#ars-retention').val() == "") {
+                        $('#ars-retention').addClass('is-invalid');
+                        $('#invalid-ars').show();
+                    }
+                }
+            })(jQuery);
+
+            function setTableData(employees, index) {
+                $('#employeeTable tbody').empty();
+                for (let pageItem of employees[index]) {
+                    let status = pageItem.status ? "Activo" : 'Inactivo';
+                    let checked = pageItem.isChecked ? "checked" : '';
+                    const row = `
+                                <tr>
+                                    <td>  <input class="form-check-input" style="margin: 0px !important" ${checked} id="emp${pageItem.id}" type="checkbox" value=""></td>
+                                    <td>${pageItem.id}</td>
+                                    <td>${pageItem.name} ${pageItem.lastName}</td>
+                                    <td class="salary">${pageItem.salary}</td>
+                                    <td>${status}</td>
+                                </tr>
+                            `;
+                    $('#employeeTable tbody').append(row);
+                }
+
+                $('#employeeTable tbody tr').each(function (index, row) {
+                    $(row).find('input').click(function () {
+                        let id = $(this).attr('id');
+                        id = id.replace('emp', '');
+
+                        for (let page of employees) {
+                            for (let index in page) {
+                                if (page[index].id == id) {
+                                    page[index].isChecked = !page[index].isChecked;
+                                }
+                            }
+                        }
+                    });
+                });
+
+            }
+
+        });
+    </script>    
+}
+    

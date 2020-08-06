@@ -5,11 +5,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\material-icon\**" />
+    <Content Remove="wwwroot\material-icon\**" />
+    <EmbeddedResource Remove="wwwroot\material-icon\**" />
+    <None Remove="wwwroot\material-icon\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot\css\print.min.css" />
+    <Content Remove="wwwroot\css\style.css~RF4390fa5.TMP" />
     <Content Remove="wwwroot\js\print.min.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Controllers\PayrollsController.cs~RF3de95a9.TMP" />
+    <None Remove="Models\Dto\PayrollFilter.cs~RF3cbd638.TMP" />
+    <None Remove="Repository\Contracts\IPayrollRepository.cs~RF3dcdc8f.TMP" />
     <None Remove="Views\Employees\Report.cshtml~RF16656728.TMP" />
   </ItemGroup>
 

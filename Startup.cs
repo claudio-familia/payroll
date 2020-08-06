@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using PayrollApp.Models;
 using PayrollApp.Repository;
 using PayrollApp.Repository.Contracts;
+using PayrollApp.Services;
+using PayrollApp.Services.Contracts;
 
 namespace PayrollApp
 {
@@ -36,6 +38,8 @@ namespace PayrollApp
 
             services.AddScoped<IBaseRepository<Employee>, BaseRepository<Employee>>();
             services.AddScoped<IBaseRepository<Payroll>, BaseRepository<Payroll>>();
+            services.AddScoped<IPayrollRepository, PayrollRepository>();
+            services.AddScoped<IPayrollService, PayrollService>();
 
             services.AddControllersWithViews();
         }

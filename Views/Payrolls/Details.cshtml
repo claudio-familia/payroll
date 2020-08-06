@@ -1,0 +1,52 @@
+﻿@model IEnumerable<PayrollApp.Models.Dto.PayrollDetailDto>
+
+@{
+    ViewData["Title"] = "Detalle";    
+}
+
+<h1>Detalle</h1>
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped" id="payrollTable">
+        <thead class="thead-dark">
+            <tr>
+                <th>
+                    Empleados
+                </th>
+                <th>
+                    Fecha de nomina
+                </th>
+                <th>
+                    Salario bruto
+                </th>                
+                <th>
+                    Salario con impuestos
+                </th>             
+                <th>
+                    Salario neto
+                </th>
+                <th>
+                    Estatus
+                </th>                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {   
+                <tr>                        
+                    <td>@item.Employee</td>
+                    <td>@item.PayrollDate</td>
+                    <td>@item.RawTotal</td>                                        
+                    <td>@item.TaxTotal</td>                    
+                    <td>@item.NetTotal</td>
+                    <td>@item.Status</td>                    
+                </tr>                                             
+            }
+        </tbody>
+    </table>
+    
+
+</div>
+<div class="form-group float-right">    
+    <a class="btn btn-dark" asp-action="Index">Volver hacia atras</a>
+</div>

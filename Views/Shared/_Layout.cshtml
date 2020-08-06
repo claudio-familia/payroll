@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.21/datatables.min.css" />
     <link rel="stylesheet" type="text/css" href="~/css/print.css">
-
+    <link rel="stylesheet" type="text/css" href="~/css/select.dataTables.min.css">
+    <link rel="stylesheet" href="~/icons/css/material-design-iconic-font.min.css">
+    <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
@@ -49,7 +52,8 @@
             @RenderBody()
         </main>
     </div>
-
+    <br />
+    <br />
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2020 - PayrollApp
@@ -61,8 +65,9 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script type="text/javascript" src="~/js/print.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.21/datatables.min.js"></script>
+    <script type="text/javascript" src="~/js/print.js"></script>    
+    <script src="~/js/datatables.min.js"></script>
+    <script src="~/js/sweetalert2@9.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

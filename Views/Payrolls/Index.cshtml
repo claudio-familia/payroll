@@ -1,4 +1,4 @@
-﻿
+﻿@model IEnumerable<PayrollApp.Models.Dto.PayrollResponseDto>
 @{
     ViewData["Title"] = "Inicio";
 }
@@ -14,35 +14,80 @@
         </div>
     </div>
     <hr />
-    <table class="table" id="payrollTable">
+    <table class="table table-hover table-striped" id="payrollTable">
         <thead class="thead-dark">
             <tr>
                 <th>
-                    Nombre
+                    Cantidad de empleados                    
                 </th>
                 <th>
-                    Apellido
+                    Fecha de nomina
                 </th>
                 <th>
-                    Genero
+                    Tot. sin descuentos
                 </th>
                 <th>
-                    Salario
+                    Descuentos
                 </th>
                 <th>
-                    Estado
+                    Total neto
+                </th>
+                <th>
+                    Estatus
                 </th>
                 <th></th>
             </tr>
         </thead>
-        <tbody>   
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var action = item.Status == "Activo" ? "Inactivar" : "Activar";
+                <tr>
+                    <td class="text-center">@item.EmployeeQuantity</td>
+                    <td class="text-center">@item.PayrollDate</td>
+                    <td class="text-center">@item.RawTotal</td>
+                    <td class="text-center">@item.TaxTotal</td>
+                    <td class="text-center">@item.NetTotal</td>
+                    <td class="text-center">@item.Status</td>
+                    <td>
+                        <a class="btn btn-dark btn-sm" asp-action="Details" asp-route-id="@item.PayrollDate">Detalles</a> |
+                        <a class="btn btn-info btn-sm" asp-action="Inactive" asp-route-id="@item.PayrollDate">@action</a>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#payrollTable').dataTable();
+            $('#payrollTable').dataTable({
+                "language": {
+                    "search": "Buscar",
+                    "searchPlaceholder": "Buscar...",
+                    "sProcessing": "Procesando...",
+                    "sLengthMenu": "Mostrar _MENU_ registros",
+                    "sZeroRecords": "No se encontraron resultados",
+                    "sEmptyTable": "No hay datos disponible en esta tabla",
+                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                    "sInfoPostFix": "",
+                    "sUrl": "",
+                    "sInfoThousands": ",",
+                    "sLoadingRecords": "Cargando...",
+                    "oPaginate": {
+                        "sFirst": "Primero",
+                        "sLast": "Último",
+                        "sNext": "Siguiente",
+                        "sPrevious": "Anterior"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                    }
+                },
+            });
         });
     </script>
 }
