@@ -102,10 +102,7 @@
                                     Suma de salarios:
                                 </dt>
                                 <dd class="col-sm-2">
-                                    @{ 
-                                        var total = String.Format("{0,12:C2}", Model.Results.Sum(emp => emp.Salary));
-                                    }
-                                    @total
+                                    @Model.TotalSalary
                                 </dd>
                             </dl>
                             <br />
@@ -131,9 +128,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach (var item in Model.Results)
-                                    {
-                                        var salary = String.Format("{0,12:C2}", item.Salary);
-                                        var status = item.Status ? "Activo" : "Inactivo";
+                                    {                                        
                                         <tr>
                                             <td>
                                                 @Html.DisplayFor(modelItem => item.Name)
@@ -145,10 +140,10 @@
                                                 @Html.DisplayFor(modelItem => item.Gender)
                                             </td>
                                             <td>
-                                                @salary
+                                                @Html.DisplayFor(modelItem => item.Salary)
                                             </td>
                                             <th>
-                                                @status
+                                                @Html.DisplayFor(modelItem => item.Status)
                                             </th>
                                         </tr>
                                     }

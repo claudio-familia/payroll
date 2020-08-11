@@ -7,7 +7,8 @@ namespace PayrollApp.Models.Dto
 {
     public class EmployeeResponseDto
     {
-        public IEnumerable<Employee> Results { get; set; }
+        public IEnumerable<EmployeeDto> Results { get; set; }
         public ReportFilterDto Filters { get; set; }
+        public string TotalSalary { get; set; }
     }
 }
