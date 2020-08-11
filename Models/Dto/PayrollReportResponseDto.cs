@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace PayrollApp.Models.Dto
 {
-    public class EmployeeResponseDto
-    {
-        public IEnumerable<Employee> Results { get; set; }
+    public class PayrollReportResponseDto
+    {       
         public ReportFilterDto Filters { get; set; }
+        public List<PayrollResults> Results { get; set; }
     }
 }

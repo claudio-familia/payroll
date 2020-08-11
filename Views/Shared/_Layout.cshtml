@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="~/css/select.dataTables.min.css">
     <link rel="stylesheet" href="~/icons/css/material-design-iconic-font.min.css">
     <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/css/datepicker.min.css" rel="stylesheet" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -33,13 +34,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Empleados</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true">
                                 Reportes
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" asp-area="" asp-controller="Employees" asp-action="Report">Empleados</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Nomina</a>
+                                <a class="dropdown-item" asp-area="" asp-controller="Payrolls" asp-action="Report">Nomina</a>
                             </div>
                         </li>
                     </ul>
@@ -65,9 +66,10 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script type="text/javascript" src="~/js/print.js"></script>    
+    <script type="text/javascript" src="~/js/print.js"></script>
     <script src="~/js/datatables.min.js"></script>
     <script src="~/js/sweetalert2@9.js"></script>
+    <script src="~/js/bootstrap-datepicker.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

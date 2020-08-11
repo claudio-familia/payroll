@@ -165,7 +165,8 @@
 
 @section Scripts{ 
     <script>
-        $(document).ready(function () {
+
+        $(document).ready(function () {           
             const filter = '@Model.Filters.Filter';
             const gender = '@Model.Filters.Gender';
             const status = '@Model.Filters.Status';
@@ -177,6 +178,11 @@
             $('#OrderBy').val(`${orderBy}`);
 
             $('#btnPrint').click(function () {
+                if ($('#print-zone table tbody tr').length == 0) {
+                    Swal.fire("Información", "No hay resultados a imprimir", "info");
+                    return;
+                }
+
                 let htmlToPrint = '';
 
                 htmlToPrint = $('#print-zone').html()
@@ -187,6 +193,8 @@
                 mywindow.document.write('<link rel="stylesheet" href="/css/site.css" />');               
 
                 mywindow.document.write('</head><body >');
+                mywindow.document.write(`<h2>Reporte de nomina</h2>
+                                        <hr />`);
                 mywindow.document.write(htmlToPrint);
                 mywindow.document.write('</body></html>');                
                 mywindow.document.close();

@@ -1,0 +1,214 @@
+﻿@model PayrollApp.Models.Dto.PayrollReportResponseDto
+@{
+    ViewData["Title"] = "Reportes";
+}
+<div class="row">
+    <div class="col-12">
+        <h2>Reporte de nomina</h2>
+        <hr />
+        <div class="card">
+            <div class="card-header">
+                Filtros
+            </div>
+            <div class="card-body">
+                <form asp-action="Report">
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="card-title">Filtrar por mes: </h5>
+                            <input type="text" class="form-control" name="Date" required id="payroll-date" placeholder="Seleccione el mes a filtrar">
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="card-title">Filtro (Nombre, apellido, salario)</h5>
+                            <input type="text" name="Filter" class="form-control" id="Filter" placeholder="Digite una palabra para filtrar" />
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-4">
+                            <h5 class="card-title">Sexo</h5>
+                            <select name="Gender" id="Gender" class="form-control">
+                                <option value="">Todos los generos</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="card-title">Estado</h5>
+                            <select name="Status" id="Status" class="form-control">
+                                <option value="">Todos los estados</option>
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="card-title">Ordenar por: </h5>
+                            <select name="OrderBy" id="OrderBy" class="form-control">
+                                <option value="">Seleccionar un orden particular</option>
+                                <option value="NameUp">Ordernar por nombre ascendente</option>
+                                <option value="NameDown">Ordernar por nombre descendente</option>
+
+                                <option value="LastNameUp">Ordernar por apellido ascendente</option>
+                                <option value="LastNameDown">Ordernar por apellido descendente</option>
+
+                                <option value="SalaryUp">Ordenar por salario ascendente</option>
+                                <option value="SalaryDown">Ordenar por salario descendente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <br />
+                    <p class="float-right">
+                        <button type="button" href="#" id="btnPrint" class="btn btn-success">Imprimir</button>
+                        <button type="submit" href="#" class="btn btn-primary">Generar reporte</button>
+                    </p>
+                </form>
+            </div>
+        </div>
+        <br />
+        <div class="card">
+            <div class="card-header">
+                Resultados
+            </div>
+            <div class="card-body">
+                @if (Model.Results == null || Model.Results.Count() == 0)
+                {
+                    <div id="noResult" style="padding:20px;">
+                        <center>
+                            No hay resultados para mostrar
+                        </center>
+                    </div>
+                }
+                else
+                {
+            <div id="print-zone">     
+                <br />
+                @foreach (var payroll in Model.Results)
+                {                    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr class="bg-dark text-white">
+                                <th colspan="5">
+                                    <h3>@payroll.PayrollName</h3>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Genero
+                                </th>
+                                <th>
+                                    Salario bruto
+                                </th>
+                                <th>
+                                    Salario con impuestos
+                                </th>
+                                <th>
+                                    Salario neto
+                                </th>
+                            </tr>
+                        </thead>
+                    @foreach (var item in payroll.Results)
+                    {
+                        <tbody>
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Employee)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Gender)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RawTotal)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.TaxTotal)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.NetTotal)
+                                </td>
+                            </tr>                            
+                        </tbody>
+                    }
+                        <tfoot>
+                            <tr>
+                                <th colspan="2" class="text-center">
+                                    Empleados: @payroll.Results.Count()
+                                </th>                                
+                                <th>
+                                    @payroll.RawTotal
+                                </th>
+                                <th>
+                                    @payroll.TaxTotal
+                                </th>
+                                <td>
+                                    @payroll.NetTotal
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('#payroll-date').datepicker({
+                autoclose: true,
+                minViewMode: 1,
+                format: 'mm/yyyy'
+            })
+
+            const date = '@Model.Filters.Date';
+            const filter = '@Model.Filters.Filter';
+            const gender = '@Model.Filters.Gender';
+            const status = '@Model.Filters.Status';
+            const orderBy = '@Model.Filters.OrderBy';
+
+            $('#Filter').val(`${filter}`);
+            $('#payroll-date').val(`${date}`);
+            $('#Gender').val(`${gender}`);
+            $('#Status').val(`${status}`);
+            $('#OrderBy').val(`${orderBy}`);
+
+            $('#btnPrint').click(function () {
+
+                if ($('#print-zone table tbody tr').length == 0) {
+                    Swal.fire("Información", "No hay resultados a imprimir", "info");
+                    return;
+                }
+
+                let htmlToPrint = '';
+
+                htmlToPrint = $('#print-zone').html()
+
+                var mywindow = window.open('', '', '');
+                mywindow.document.write('<html><head><title>Payroll | Reporte de nomina</title>');
+                mywindow.document.write('<link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />');
+                mywindow.document.write('<link rel="stylesheet" href="/css/site.css" />');
+
+                mywindow.document.write('</head><body>');
+                mywindow.document.write(`<h2>Reporte de nomina</h2>
+                                        <hr />`);
+                mywindow.document.write(htmlToPrint);
+                mywindow.document.write('</body></html>');
+                mywindow.document.close();
+
+                setTimeout(function () {
+                    mywindow.print();
+                }, 500);
+
+
+                return false;
+            });
+        });
+    </script>
+}

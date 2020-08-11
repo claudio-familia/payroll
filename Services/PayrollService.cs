@@ -20,10 +20,33 @@ namespace PayrollApp.Services
             _employeeRepository = employeeRepository;
         }
 
-        public double GetAfpRetention(string afpRetentition, double salary)
+        public async Task GeneratePayrollAsync(PayrollRequestDto payrollRequestDto)
         {
-            return (double.Parse(afpRetentition, CultureInfo.InvariantCulture) / 100) * salary;
-        }
+            foreach (var employee in payrollRequestDto.Employees)
+            {
+                double afpRetention = this.GetAfpRetention(payrollRequestDto.Afp, employee.Salary);
+                double arsRetention = this.GetArsRetention(payrollRequestDto.ARS, employee.Salary);
+                double isrRetention = this.GetIsrRetention(employee.Salary);
+
+                double taxableSalary = employee.Salary - (afpRetention + arsRetention);
+
+                await _payrollRepository.AddAsync(
+                    new Payroll()
+                    {
+                        AfpRetention = afpRetention,
+                        ArsRetention = arsRetention,
+                        EmployeeId = employee.Id,
+                        RawSalary = employee.Salary,
+                        IsrRetention = isrRetention,
+                        TaxableSalary = taxableSalary,
+                        NetSalary = taxableSalary - isrRetention,
+                        PayrollDate = payrollRequestDto.Date,
+                        CreatedAt = DateTime.Now,
+                        Status = true
+                    }
+                );
+            }
+        }       
 
         public async Task<List<PayrollResponseDto>> GetAllPayrollsAsync()
         {
@@ -49,12 +72,17 @@ namespace PayrollApp.Services
             return response;
         }
 
-        public double GetArsRetention(string arsRetentition, double salary)
+        private double GetAfpRetention(string afpRetentition, double salary)
+        {
+            return (double.Parse(afpRetentition, CultureInfo.InvariantCulture) / 100) * salary;
+        }
+
+        private double GetArsRetention(string arsRetentition, double salary)
         {
             return (double.Parse(arsRetentition, CultureInfo.InvariantCulture) / 100) * salary;
         }
 
-        public double GetIsrRetention(double salary)
+        private double GetIsrRetention(double salary)
         {
             double result = 0;
 
@@ -102,6 +130,96 @@ namespace PayrollApp.Services
             }
 
             return response;
+        }
+
+        public async Task<PayrollReportResponseDto> GetPayrollReportAsync(ReportFilterDto payrollFilterDto)
+        {
+            string[] splitDate = payrollFilterDto.Date.Split("/");
+            CultureInfo ci = new CultureInfo("es-Do");
+
+            DateTime startedDate = new DateTime(int.Parse(splitDate[1]), int.Parse(splitDate[0]), 1);
+            DateTime endDate = new DateTime(int.Parse(splitDate[1]), int.Parse(splitDate[0]) + 1, 1).AddDays(-1);            
+
+            IEnumerable<Payroll> result = await _payrollRepository.FindAsync(payroll => payroll.PayrollDate >= startedDate && payroll.PayrollDate <= endDate);
+
+            IEnumerable<PayrollDetailDto> response = result.OrderBy(payroll => payroll.PayrollDate).Select(payroll => new PayrollDetailDto()
+            {
+                Employee = payroll.EmployeeId.ToString(),
+                NetTotal = payroll.NetSalary.ToString("C", ci),
+                RawTotal = payroll.RawSalary.ToString("C", ci),
+                Gender = "",
+                TaxTotal = payroll.TaxableSalary.ToString("C", ci),
+                Status = payroll.Status ? "Activo" : "Inactivo",
+                PayrollDate = payroll.PayrollDate.Value.ToString("m"),
+                Id = payroll.Id
+            }).ToList();
+
+            foreach (var item in response)
+            {
+                Employee employee = await _employeeRepository.GetByIdAsync(int.Parse(item.Employee));
+                item.Employee = $"{employee.Name} {employee.LastName}";
+                item.Gender = employee.Gender;
+            }
+
+            if (!string.IsNullOrEmpty(payrollFilterDto.Filter))
+            {
+                response = response.Where(item => item.Employee.ToUpper().Contains(payrollFilterDto.Filter.ToUpper()));
+            }
+
+            if (!string.IsNullOrEmpty(payrollFilterDto.Gender))
+            {
+                response = response.Where(item => item.Gender == payrollFilterDto.Gender);
+            }
+
+            if (!string.IsNullOrEmpty(payrollFilterDto.Status))
+            {
+                response = response.Where(item => item.Status == payrollFilterDto.Status);
+            }
+
+            switch (payrollFilterDto.OrderBy)
+            {
+                case "NameUp":
+                    response = response.OrderBy(item => item.Employee);
+                    break;
+
+                case "NameDown":
+                    response = response.OrderByDescending(item => item.Employee);
+                    break;
+
+                case "SalaryUp":
+                    response = response.OrderBy(item => item.NetTotal);
+                    break;
+
+                case "SalaryDown":
+                    response = response.OrderByDescending(item => item.NetTotal);
+                    break;
+
+                default:
+                    break;
+            }
+
+            var groupList = response.GroupBy(item => item.PayrollDate);
+            var responseList = new List<PayrollResults>();
+
+            foreach(var item in groupList)
+            {
+                var itemToInsert = new PayrollResults();
+                itemToInsert.PayrollName = $"Nomina del {item.Key} - {item.FirstOrDefault().Status}";
+                
+                itemToInsert.RawTotal = item.Sum(p => float.Parse(p.RawTotal.Replace(",", "").Replace("$",""), CultureInfo.InvariantCulture)).ToString("C", ci);
+                itemToInsert.TaxTotal = item.Sum(p => float.Parse(p.TaxTotal.Replace(",", "").Replace("$", ""), CultureInfo.InvariantCulture)).ToString("C", ci);
+                itemToInsert.NetTotal = item.Sum(p => float.Parse(p.NetTotal.Replace(",", "").Replace("$", ""), CultureInfo.InvariantCulture)).ToString("C", ci);
+                
+                itemToInsert.Results = new List<PayrollDetailDto>();
+                foreach (var data in item)
+                {
+                    itemToInsert.Results.Add(data);
+                }
+                responseList.Add(itemToInsert);
+            }
+            
+
+            return new PayrollReportResponseDto() { Results = responseList, Filters = payrollFilterDto };
         }
     }
 }

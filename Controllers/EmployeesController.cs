@@ -26,14 +26,14 @@ namespace PayrollApp.Controllers
         public IActionResult Report()
         {
             var response = new EmployeeResponseDto();
-            response.Filters = new EmployeeFilterDto();
+            response.Filters = new ReportFilterDto();
             response.Results = new List<Employee>();
             return View(response);
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> ReportAsync(EmployeeFilterDto employeeFilterDto)
+        public async Task<IActionResult> ReportAsync(ReportFilterDto employeeFilterDto)
         {
             IEnumerable<Employee> response = await _employeeRepository.GetAllAsync();
 
@@ -52,7 +52,7 @@ namespace PayrollApp.Controllers
 
             if (!string.IsNullOrEmpty(employeeFilterDto.Status))
             {
-                response = response.Where(item => item.Gender == employeeFilterDto.Status);
+                response = response.Where(item => item.Status == (employeeFilterDto.Status == "Activo"));
             }
 
             switch (employeeFilterDto.OrderBy)

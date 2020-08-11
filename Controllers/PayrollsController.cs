@@ -57,31 +57,8 @@ namespace PayrollApp.Controllers
 
         [HttpPost]
         public async Task GenerateAsync(PayrollRequestDto payrollRequestDto)
-        {           
-            foreach(var employee in payrollRequestDto.Employees)
-            {                
-                double afpRetention = _payrollService.GetAfpRetention(payrollRequestDto.Afp, employee.Salary);
-                double arsRetention = _payrollService.GetArsRetention(payrollRequestDto.ARS, employee.Salary);
-                double isrRetention = _payrollService.GetIsrRetention(employee.Salary);
-
-                double taxableSalary = employee.Salary - (afpRetention + arsRetention);
-
-                await _payrollRepository.AddAsync(
-                    new Payroll()
-                    {
-                        AfpRetention = afpRetention,
-                        ArsRetention = arsRetention,
-                        EmployeeId = employee.Id,
-                        RawSalary = employee.Salary,
-                        IsrRetention = isrRetention,
-                        TaxableSalary = taxableSalary,
-                        NetSalary = taxableSalary - isrRetention,
-                        PayrollDate = payrollRequestDto.Date,
-                        CreatedAt = DateTime.Now,
-                        Status = true
-                    }
-                );
-            }
+        {
+            await _payrollService.GeneratePayrollAsync(payrollRequestDto);
         }
 
         public async Task<JsonResult> GetEmployeesAsync()
@@ -112,6 +89,24 @@ namespace PayrollApp.Controllers
         public async Task<IActionResult> Details(string id)
         {
             var response = await _payrollService.GetPayrollDetails(id);
+            return View(response);
+        }
+
+        public IActionResult Report()
+        {
+            var response = new PayrollReportResponseDto
+            {
+                Filters = new ReportFilterDto(),
+                Results = new List<PayrollResults>()
+            };
+            return View(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReportAsync(ReportFilterDto payrollFilterDto)
+        {
+            PayrollReportResponseDto response = await _payrollService.GetPayrollReportAsync(payrollFilterDto);           
+
             return View(response);
         }
     }

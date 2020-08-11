@@ -5,6 +5,7 @@
         public int Id { get; set; }
 
         public string Employee { get; set; }
+        public string Gender { get; set; }
 
         public string PayrollDate { get; set; }
 
