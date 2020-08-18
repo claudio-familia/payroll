@@ -296,9 +296,13 @@
                     });
 
                     selectedEmployees.forEach(item => {
+                        debugger
                         totalSalary += item.salary;
 
-                        const salaryByYear = item.salary * 12;
+                        let afp = ($('#afp-retention').val() / 100) * item.salary
+                        let ars = ($('#ars-retention').val() / 100) * item.salary
+
+                        const salaryByYear = (item.salary - afp - ars) * 12;
 
                         if (salaryByYear <= 416220) {
                             totalDiscount += 0;

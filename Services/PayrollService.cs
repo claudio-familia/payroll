@@ -26,9 +26,10 @@ namespace PayrollApp.Services
             {
                 double afpRetention = this.GetAfpRetention(payrollRequestDto.Afp, employee.Salary);
                 double arsRetention = this.GetArsRetention(payrollRequestDto.ARS, employee.Salary);
-                double isrRetention = this.GetIsrRetention(employee.Salary);
 
                 double taxableSalary = employee.Salary - (afpRetention + arsRetention);
+
+                double isrRetention = this.GetIsrRetention(taxableSalary);
 
                 await _payrollRepository.AddAsync(
                     new Payroll()
@@ -94,11 +95,11 @@ namespace PayrollApp.Services
             }
             else if (salaryByYear > 624329.01 && salaryByYear <= 867123)
             {
-                result = 2601.33 + ((salaryByYear - 624329.01) * 0.2);                
+                result = 31216 + ((salaryByYear - 624329.01) * 0.2);                
             }
             else if (salaryByYear > 867123.01)
             {
-                result = 6648 + ((salaryByYear - 867123.01) * 0.25);                
+                result = 79776 + ((salaryByYear - 867123.01) * 0.25);                
             }
 
             result = result / 12;
